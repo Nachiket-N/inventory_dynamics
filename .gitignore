@@ -1,5 +1,54 @@
-*.class
-*.log
+/*.tar.gz
+/tmp
+/dist
+/dist-extras
+/julia
+/julia.bat
+/usr
+/oprofile_data
+/usr-staging
+/Make.user
+/julia-*
+/deps/jlutilities/depot
+/source-dist.tmp
+/source-dist.tmp1
+/test/results_*.json
+/test/results_*.dat
+/test/deps
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
+*.expmap
+*.exe
+*.dll
+*.dwo
+*.do
+*.o
+*.o.tmp
+*.obj
+*.so
+*.dylib
+*.dSYM
+*.h.gen
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+*.jl.*.mem
+*.ji
+
+/perf*
+.DS_Store
+.idea/*
+.vscode/*
+.zed/*
+*.heapsnapshot
+.cache
+# Buildkite: Ignore the entire .buildkite directory
+/.buildkite
+
+# Builtkite: json test data
+/test/results.json
+
+# Buildkite: Ignore the unencrypted repo_key
+repo_key
+
+# Buildkite: Ignore any agent keys (public or private) we have stored
+agent_key*
