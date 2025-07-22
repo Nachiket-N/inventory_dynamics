@@ -9,15 +9,15 @@ const RESULTS_PATH = "inventory_dynamics_project/src/images"
 
 # Classical Bullwhip model to generate synthetic  
 function classical_bullwhip_model!(du, u, p, t)
-    tau, alpha, I_target = p
+    tau, alpha, I_target, kappa, mu = p
     du[1] = u[2] - u[3]
     du[2] = (1/tau) * (u[3] + alpha * (I_target - u[1]) - u[2])
-    du[3] = 0 # assuming constant demand 
+    du[3] = kappa * (mu - u[3]) + 5 * randn() * sin(2*pi*t) # using a mean reverting dD/dt with noise
 end
 
-p0 = (tau = 0.3, alpha = 2.5, I_target = 10.0)
-u0 = [2 , 8 , 3]
-tspan = (0.0, 5.0)
+p0 = [8.0, 12.0, 100.0, 0.02, 10.0]
+u0 = [60.0, 10.0, 20.0]
+tspan = (0.0, 25.0)
 
 prob = ODEProblem(classical_bullwhip_model!, u0, tspan, p0)
 sol = solve(prob, Tsit5(), saveat=0.2)
