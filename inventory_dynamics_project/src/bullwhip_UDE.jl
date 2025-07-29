@@ -98,7 +98,7 @@ end
 ###############################################################################
 # Optimisation (ADAM -> BFGS)
 losses = Float64[]
-cb = function (θ, l)
+cb = function (theta, l)
     push!(losses, l)
     return false
 end
