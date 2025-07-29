@@ -8,7 +8,7 @@ using Random
 using Statistics
 using CairoMakie
 
-const RESULTS_PATH = "inventory_dynamics_project/src/images"
+const RESULTS_PATH = "inventory_dynamics_project/src/images/UDE"
 
 # Order of variables - IOD - inventory level, order rate, customer demand rate
 # tau - inventory adjustment delay
@@ -129,11 +129,11 @@ pred_full     = Array(sol_ude)
 fig1 = Figure()
 ax1 = Axis(fig1[1, 1]; title = "Training window fit", xlabel = "time", ylabel = "state")
 scatter!(ax1, tsteps, data_train[1, :]; color = :black, label = "I data")
-scatter!(ax1, tsteps, data_train[2, :]; color = :gray)
-scatter!(ax1, tsteps, data_train[3, :]; color = :orange)
+scatter!(ax1, tsteps, data_train[2, :]; color = :gray, label = "O data")
+scatter!(ax1, tsteps, data_train[3, :]; color = :orange, label = "D data")
 lines!(ax1, tsteps, predict(res2.u)[1, :]; color = :red,   label = "I UDE")
-lines!(ax1, tsteps, predict(res2.u)[2, :]; color = :green)
-lines!(ax1, tsteps, predict(res2.u)[3, :]; color = :blue)
+lines!(ax1, tsteps, predict(res2.u)[2, :]; color = :green, label="O UDE")
+lines!(ax1, tsteps, predict(res2.u)[3, :]; color = :blue, label="D UDE")
 axislegend(ax1; position = :rb)
 save(joinpath(RESULTS_PATH, "train_fit.png"), fig1)
 
