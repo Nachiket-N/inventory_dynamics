@@ -8,7 +8,7 @@ using Random
 using Statistics
 using CairoMakie
 
-const RESULTS_PATH = "inventory_dynamics_project/src/images/NODE"
+const RESULTS_PATH = "inventory_dynamics_project/src/images/NODE/poisson"
 
 # Order of variables - IOD - inventory level, order rate, customer demand rate
 # tau - inventory adjustment delay
@@ -21,14 +21,14 @@ function classical_bullwhip_model!(du, u, p, t)
     tau, alpha, I_target, kappa, mu = p
     du[1] = u[2] - u[3]                                              # dI/dt
     du[2] = (1 / tau) * (u[3] + alpha * (I_target - u[1]) - u[2])    # dO/dt
-    du[3] = kappa * (mu - u[3]) + 5 * randn() * sin(2 * pi * t)      # dD/dt (noisy for data gen)
+    du[3] = kappa*(mu - u[3]) + (rand() < 0.2 ? 15 : 0)
 end
 
 # tau, alpha, I_target, kappa, mu
 p_phys = [8.0, 12.0, 100.0, 0.02, 10.0]
 # initial state: I, O, D
-u0      = [60.0, 10.0, 20.0]
-tspan   = (0.0, 25.0)
+u0 = [60.0, 10.0, 20.0]
+tspan = (0.0, 25.0)
 
 rng = Random.default_rng()
 Random.seed!(1234)
@@ -40,7 +40,7 @@ data = Array(sol_data)
 tvec = sol_data.t
 
 fig = Figure()
-ax  = Axis(fig[1,1]; xlabel = "Time", ylabel = "", title = "ODE data")
+ax = Axis(fig[1,1]; xlabel = "Time", ylabel = "", title = "ODE data")
 lines!(ax, tvec, data[1, :]; label = "I")
 lines!(ax, tvec, data[2, :]; label = "O")
 lines!(ax, tvec, data[3, :]; label = "D")
@@ -52,9 +52,9 @@ save(joinpath(RESULTS_PATH, "ODE_data.png"), fig)
 # Training subset (short horizon)
 
 tspan_train = (0.0, 8.0)
-idx_train   = findall(t -> t ≤ tspan_train[2], tvec)
-tsteps      = tvec[idx_train]
-data_train  = data[:, idx_train]
+idx_train = findall(t -> t ≤ tspan_train[2], tvec)
+tsteps = tvec[idx_train]
+data_train = data[:, idx_train]
 
 ###############################################################################
 # Defining the Neural Network
@@ -97,7 +97,7 @@ end
 losses = Float64[]
 cb = (theta, l) -> (@show loss = l; push!(losses, l); false)
 
-adtype   = Optimization.AutoZygote()
+adtype = Optimization.AutoZygote()
 opt_fun  = Optimization.OptimizationFunction((x,p)->loss(x), adtype)
 opt_prob = Optimization.OptimizationProblem(opt_fun, theta0)
 
@@ -120,7 +120,7 @@ pred_full      = Array(neuralode_full(u0, res_bfgs.u, st_net)[1])
 
 # Training‑window fit
 fig1 = Figure()
-ax1  = Axis(fig1[1,1]; title = "Training window fit (Neural ODE)",
+ax1 = Axis(fig1[1,1]; title = "Training window fit (Neural ODE)",
             xlabel = "time", ylabel = "state")
 scatter!(ax1, tsteps, data_train[1, :]; color = :black,  label = "I data")
 scatter!(ax1, tsteps, data_train[2, :]; color = :gray,   label = "O data")
@@ -133,7 +133,7 @@ save(joinpath(RESULTS_PATH, "train_fit_NODE.png"), fig1)
 
 # (b) Loss‑curve (log–log)
 fig2 = Figure()
-ax2  = Axis(fig2[1,1]; title = "Loss history (Neural-ODE)",
+ax2 = Axis(fig2[1,1]; title = "Loss history (Neural-ODE)",
             xlabel = "iteration", ylabel = "loss",
             xscale = Makie.log10, yscale = Makie.log10)
 lines!(ax2, 1:length(losses), losses)
@@ -141,7 +141,7 @@ save(joinpath(RESULTS_PATH, "losses_NODE.png"), fig2)
 
 # (c) Extrapolation across the full 0–25 s horizon
 fig3 = Figure()
-ax3  = Axis(fig3[1,1]; title = "Full extrapolation (Neural-ODE)",
+ax3 = Axis(fig3[1,1]; title = "Full extrapolation (Neural-ODE)",
             xlabel = "time", ylabel = "I, O, D")
 scatter!(ax3, tvec, data[1, :]; color = :black, label = "I data")
 lines!(ax3,  tvec, pred_full[1, :]; color = :red, label = "I NODE")
